@@ -1,6 +1,5 @@
 from rlcard.games.limitholdem import Player
 
-
 class NolimitholdemPlayer(Player):
     def __init__(self, player_id, init_chips, np_random):
         """
@@ -12,6 +11,10 @@ class NolimitholdemPlayer(Player):
         """
         super().__init__(player_id, np_random)
         self.remained_chips = init_chips
+        self.position = None
+
+    def __repr__(self):
+        return f"Player(player_id={self.player_id}, position={self.position}, hand={self.hand}, remained_chips={self.remained_chips})"
 
     def bet(self, chips):
         quantity = chips if chips <= self.remained_chips else self.remained_chips

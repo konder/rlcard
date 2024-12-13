@@ -14,8 +14,15 @@ class Action(Enum):
     RAISE_POT = 3
     # RAISE_2POT = 5
     ALL_IN = 4
-    # SMALL_BLIND = 7
-    # BIG_BLIND = 8
+    SMALL_BLIND = 5
+    BIG_BLIND = 6
+
+    @staticmethod
+    def value_of(value):
+        for action in Action:
+            if action.value == value:
+                return action
+        raise ValueError('No such value')
 
 
 class NolimitholdemRound:
@@ -135,6 +142,8 @@ class NolimitholdemRound:
         """
 
         full_actions = list(Action)
+        full_actions.remove(Action.BIG_BLIND)
+        full_actions.remove(Action.SMALL_BLIND)
 
         # The player can always check or call
         player = players[self.game_pointer]

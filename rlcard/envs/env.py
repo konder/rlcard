@@ -1,5 +1,8 @@
 from rlcard.utils import *
 
+from rlcard.games.nolimitholdem.trajectory import Trajectory
+
+
 class Env(object):
     '''
     The base Env class. For all the environments in RLCard,
@@ -48,6 +51,8 @@ class Env(object):
         # Set random seed, default is None
         self.seed(config['seed'])
 
+        # Set log
+        self.trajectories_humanization = Trajectory()
 
     def reset(self):
         ''' Start a new game
@@ -60,6 +65,12 @@ class Env(object):
         '''
         state, player_id = self.game.init_game()
         self.action_recorder = []
+        self.trajectories_humanization = Trajectory()
+        self.trajectories_humanization.set_players_info(self.game.players)
+
+        # record SB、BB log
+        self.trajectories_humanization.add_blind_action(self.game.players[(player_id - 2) % self.num_players], self.game.players[(player_id - 1) % self.num_players])
+
         return self._extract_state(state), player_id
 
     def step(self, action, raw_action=False):
@@ -81,9 +92,9 @@ class Env(object):
         self.timestep += 1
         # Record the action for human interface
         self.action_recorder.append((self.get_player_id(), action))
-        next_state, player_id = self.game.step(action)
+        next_state, player_id, stage, action_stage = self.game.step(action)
 
-        return self._extract_state(next_state), player_id
+        return self._extract_state(next_state), player_id, stage, action_stage
 
     def step_back(self):
         ''' Take one step backward.
@@ -146,9 +157,11 @@ class Env(object):
                 action = self.agents[player_id].step(state)
 
             # Environment steps
-            next_state, next_player_id = self.step(action, self.agents[player_id].use_raw)
+            next_state, next_player_id, stage, action_stage = self.step(action, self.agents[player_id].use_raw)
+
             # Save action
             trajectories[player_id].append(action)
+            self.trajectories_humanization.add_action_to_stage(action_stage.name, self.game.public_cards, self.game.players[player_id], action)
 
             # Set the state and player
             state = next_state
@@ -162,11 +175,12 @@ class Env(object):
         for player_id in range(self.num_players):
             state = self.get_state(player_id)
             trajectories[player_id].append(state)
+            self.trajectories_humanization.add_final(self.game.public_cards, self.game.players[player_id])
 
         # Payoffs
         payoffs = self.get_payoffs()
 
-        return trajectories, payoffs
+        return trajectories, payoffs, self.trajectories_humanization.trajectory
 
     def is_over(self):
         ''' Check whether the curent game is over

@@ -101,6 +101,26 @@ def elegent_form(card):
 
     return suits[card[0]] + rank
 
+def elegent_form_card(card):
+    ''' Get a elegent form of a card string
+
+    Args:
+        card (Class Card): A card
+
+    Returns:
+        elegent_card (string): A nice form of card
+    '''
+    suits = {'S': '♠', 'H': '♥', 'D': '♦', 'C': '♣','s': '♠', 'h': '♥', 'd': '♦', 'c': '♣' }
+    rank = '10' if card.rank == 'T' else card.rank
+
+    return suits[card.suit] + rank
+
+def elegent_form_cards(cards):
+    cards_string = ''
+    for card in cards:
+        cards_string += elegent_form_card(card) + ' '
+    return cards_string
+
 def print_card(cards):
     ''' Nicely print a card or list of cards
 

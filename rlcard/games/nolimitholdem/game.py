@@ -19,6 +19,7 @@ class Stage(Enum):
     END_HIDDEN = 4
     SHOWDOWN = 5
 
+DEFAULT_POSITION = ['D', 'SB', 'BB', 'UTG']
 
 class NolimitholdemGame(Game):
     def __init__(self, allow_step_back=False, num_players=2):
@@ -36,6 +37,8 @@ class NolimitholdemGame(Game):
 
         # If None, the dealer will be randomly chosen
         self.dealer_id = None
+
+        self.action_stage = None
 
     def configure(self, game_config):
         """
@@ -87,6 +90,9 @@ class NolimitholdemGame(Game):
 
         # The player next to the big blind plays the first
         self.game_pointer = (b + 1) % self.num_players
+
+        # Set players position
+        self.set_position(self.game_pointer)
 
         # Initialize a bidding round, in the first round, the big blind and the small blind needs to
         # be passed to the round for processing.
@@ -152,6 +158,9 @@ class NolimitholdemGame(Game):
                 # If the last player has put enough chips, he is also bypassed
                 players_in_bypass[last_player] = 1
 
+        # Stage在变化前，需要保留玩家所有有效动作发生的Stage
+        self.action_stage = self.stage
+
         # If a round is over, we deal more public cards
         if self.round.is_over():
             # Game pointer goes to the first player not in bypass after the dealer, if there is one
@@ -185,7 +194,7 @@ class NolimitholdemGame(Game):
 
         state = self.get_state(self.game_pointer)
 
-        return state, self.game_pointer
+        return state, self.game_pointer, self.stage, self.action_stage
 
     def get_state(self, player_id):
         """
@@ -240,6 +249,16 @@ class NolimitholdemGame(Game):
         hands = [p.hand + self.public_cards if p.status in (PlayerStatus.ALIVE, PlayerStatus.ALLIN) else None for p in self.players]
         chips_payoffs = self.judger.judge_game(self.players, hands)
         return chips_payoffs
+
+    def set_position(self, game_pointer):
+        """
+        set players position
+        """
+        position_queue = DEFAULT_POSITION + ['+' + str(index + 1) for index in range(self.num_players)]
+        utg_offset = (game_pointer % len(position_queue)) - DEFAULT_POSITION.index("UTG")
+        position_queue = position_queue[:self.num_players][-utg_offset:] + position_queue[:self.num_players][:-utg_offset]
+        for i, pos in enumerate(position_queue):
+            self.players[i].position = pos
 
     @staticmethod
     def get_num_actions():

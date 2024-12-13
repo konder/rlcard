@@ -43,6 +43,9 @@ class Card:
         '''
         return self.rank + self.suit
 
+    def __repr__(self):
+        return self.rank + self.suit
+
     def get_index(self):
         ''' Get index of a card.
 
