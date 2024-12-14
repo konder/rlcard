@@ -15,6 +15,9 @@ from rlcard.utils import (
     Logger,
     plot_curve,
 )
+from examples.utils import (
+    print_trajectories
+)
 
 def train(args):
 
@@ -28,6 +31,7 @@ def train(args):
     env = rlcard.make(
         args.env,
         config={
+            'game_num_players': args.num_players,
             'seed': args.seed,
         }
     )
@@ -62,7 +66,7 @@ def train(args):
                 save_every=args.save_every
             )
     agents = [agent]
-    for _ in range(1, env.num_players):
+    for _ in range(1, args.num_players):
         agents.append(RandomAgent(num_actions=env.num_actions))
     env.set_agents(agents)
 
@@ -74,7 +78,7 @@ def train(args):
                 agents[0].sample_episode_policy()
 
             # Generate data from the environment
-            trajectories, payoffs = env.run(is_training=True)
+            trajectories, payoffs, _ = env.run(is_training=True)
 
             # Reorganaize the data to be state, action, reward, next_state, done
             trajectories = reorganize(trajectories, payoffs)
@@ -94,6 +98,7 @@ def train(args):
                         args.num_eval_games,
                     )[0]
                 )
+                print_trajectories(_, payoffs)
 
         # Get the paths
         csv_path, fig_path = logger.csv_path, logger.fig_path
@@ -111,7 +116,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '--env',
         type=str,
-        default='leduc-holdem',
+        default='no-limit-holdem',
         choices=[
             'blackjack',
             'leduc-holdem',
@@ -124,6 +129,7 @@ if __name__ == '__main__':
             'bridge',
         ],
     )
+
     parser.add_argument(
         '--algorithm',
         type=str,
@@ -133,35 +139,47 @@ if __name__ == '__main__':
             'nfsp',
         ],
     )
+
     parser.add_argument(
         '--cuda',
         type=str,
         default='',
     )
+
     parser.add_argument(
         '--seed',
         type=int,
         default=42,
     )
+
+    parser.add_argument(
+        '--num_players',
+        type=int,
+        default=6,
+    )
+
     parser.add_argument(
         '--num_episodes',
         type=int,
         default=5000,
     )
+
     parser.add_argument(
         '--num_eval_games',
         type=int,
         default=2000,
     )
+
     parser.add_argument(
         '--evaluate_every',
         type=int,
         default=100,
     )
+
     parser.add_argument(
         '--log_dir',
         type=str,
-        default='experiments/leduc_holdem_dqn_result/',
+        default='experiments/no_limit_holdem_dqn_result/',
     )
     
     parser.add_argument(
@@ -173,7 +191,7 @@ if __name__ == '__main__':
     parser.add_argument(
         "--save_every",
         type=int,
-        default=-1)
+        default=30)
 
     args = parser.parse_args()
 
