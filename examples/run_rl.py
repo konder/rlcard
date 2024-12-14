@@ -15,7 +15,7 @@ from rlcard.utils import (
     Logger,
     plot_curve,
 )
-from examples.utils import (
+from utils import (
     print_trajectories
 )
 
@@ -33,6 +33,8 @@ def train(args):
         config={
             'game_num_players': args.num_players,
             'seed': args.seed,
+            'random_chips_from': args.random_chips_from,
+            'random_chips_to': args.random_chips_to
         }
     )
 
@@ -168,6 +170,18 @@ if __name__ == '__main__':
         '--num_eval_games',
         type=int,
         default=2000,
+    )
+
+    parser.add_argument(
+        '--random_chips_from',
+        type=int,
+        default=10,
+    )
+
+    parser.add_argument(
+        '--random_chips_to',
+        type=int,
+        default=400,
     )
 
     parser.add_argument(

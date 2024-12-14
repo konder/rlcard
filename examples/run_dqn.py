@@ -15,7 +15,12 @@ model_path = 'experiments/no_limit_holdem_dqn_result/model.pth'
 device = get_device()
 
 # Make the environment with seed
-env = rlcard.make('no-limit-holdem', config={'game_num_players': num_players})
+env = rlcard.make('no-limit-holdem', config={
+    'game_num_players': num_players,
+    #'chips_for_each': 100,
+    'random_chips_from': 10,
+    'random_chips_to': 400
+})
 
 players = []
 for _ in range(num_players):

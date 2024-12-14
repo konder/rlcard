@@ -48,6 +48,8 @@ class NolimitholdemGame(Game):
         self.num_players = game_config['game_num_players']
         # must have num_players length
         self.init_chips = [game_config['chips_for_each']] * game_config["game_num_players"]
+        if game_config['random_chips_from'] > 0 and game_config['random_chips_to'] > 0:
+            self.init_chips = [self.np_random.randint(game_config['random_chips_from'], game_config['random_chips_to'])*10 for _ in range(game_config["game_num_players"])]
         self.dealer_id = game_config['dealer_id']
 
     def init_game(self):
